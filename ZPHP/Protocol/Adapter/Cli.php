@@ -13,7 +13,7 @@ use ZPHP\Protocol\IProtocol;
 
 class Cli implements IProtocol
 {
-    private $_action = 'index';
+    private $_ctrl = 'index';
     private $_method = 'main';
     private $_params = array();
     private $_view_mode;
@@ -26,11 +26,13 @@ class Cli implements IProtocol
      */
     public function parse($_data)
     {
+        $this->_ctrl = Config::getField('project', 'default_ctrl_name', 'main\\main');
+        $this->_method = Config::getField('project', 'default_method_name', 'main');
         \parse_str(array_pop($_data), $data);
-        $apn = Config::getField('project', 'action_name', 'a');
+        $apn = Config::getField('project', 'ctrl_name', 'a');
         $mpn = Config::getField('project', 'method_name', 'm');
         if (isset($data[$apn])) {
-            $this->_action = \str_replace('/', '\\', $data[$apn]);
+            $this->_ctrl = \str_replace('/', '\\', $data[$apn]);
         }
         if (isset($data[$mpn])) {
             $this->_method = $data[$mpn];
@@ -39,9 +41,9 @@ class Cli implements IProtocol
         return true;
     }
 
-    public function getAction()
+    public function getCtrl()
     {
-        return $this->_action;
+        return $this->_ctrl;
     }
 
     public function getMethod()

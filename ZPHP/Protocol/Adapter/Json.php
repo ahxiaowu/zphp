@@ -12,7 +12,7 @@ use ZPHP\Core\Config,
 
 class Json implements IProtocol
 {
-    private $_action = 'main\main';
+    private $_ctrl = 'main\\main';
     private $_method = 'main';
     private $_params = array();
     private $_data;
@@ -20,11 +20,13 @@ class Json implements IProtocol
 
     public function parse($_data)
     {
+        $this->_ctrl = Config::getField('project', 'default_ctrl_name', 'main\\main');
+        $this->_method = Config::getField('project', 'default_method_name', 'main');
         $data = \json_decode($_data, true);
-        $apn = Config::getField('project', 'action_name', 'a');
+        $apn = Config::getField('project', 'ctrl_name', 'a');
         $mpn = Config::getField('project', 'method_name', 'm');
         if (isset($data[$apn])) {
-            $this->_action = \str_replace('/', '\\', $data[$apn]);
+            $this->_ctrl = \str_replace('/', '\\', $data[$apn]);
         }
         if (isset($data[$mpn])) {
             $this->_method = $data[$mpn];
@@ -43,9 +45,13 @@ class Json implements IProtocol
         $this->fd = $fd;
     }
 
-    public function getAction()
+    public function getFd(){
+        return $this->fd;
+    }
+
+    public function getCtrl()
     {
-        return $this->_action;
+        return $this->_ctrl;
     }
 
     public function getMethod()
@@ -66,8 +72,9 @@ class Json implements IProtocol
         } else {
             $data['data'] = $model;
         }
-        $data['fd'] = $this->fd;
+        $data['_fd'] = $this->fd;
         $this->_data = $data;
+        return $this->_data;
     }
 
     public function getData()

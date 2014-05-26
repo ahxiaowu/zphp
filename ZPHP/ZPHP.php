@@ -66,6 +66,11 @@ class ZPHP
         return self::$zPath;
     }
 
+    public static function getLibPath()
+    {
+        return self::$libPath;
+    }
+
     final public static function autoLoader($class)
     {
         if(isset(self::$classPath[$class])) {
@@ -76,7 +81,7 @@ class ZPHP
         $libs = array(
             self::$rootPath . DS . self::$appPath,
             self::$zPath,
-            self::$zPath . DS . self::$libPath
+            self::$libPath
         );
         foreach ($libs as $lib) {
             $classpath = $lib . DS . $baseClasspath;
@@ -115,10 +120,11 @@ class ZPHP
         if (Config::getField('project', 'debug_mode', 0)) {
             Debug::start();
         }
-        self::$libPath = Config::get('lib_path', 'lib');
+        self::$libPath = Config::get('lib_path', self::$zPath . DS .'lib');
         $appPath = Config::get('app_path', self::$appPath);
         self::setAppPath($appPath);
-        \set_exception_handler(__CLASS__ . '::exceptionHandler');
+        $eh = Config::getField('project', 'exception_handler', __CLASS__ . '::exceptionHandler');
+        \set_exception_handler($eh);
         $timeZone = Config::get('time_zone', 'Asia/Shanghai');
         \date_default_timezone_set($timeZone);
         $serverMode = Config::get('server_mode', 'Http');

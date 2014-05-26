@@ -2,6 +2,7 @@
 /**
  * User: shenzhe
  * Date: 13-6-17
+ * 所需要库地址： https://github.com/reactphp/react
  */
 
 
@@ -67,7 +68,7 @@ class React implements IServer
         if (($pid1 = pcntl_fork()) === 0) { //子进程
             $pid = posix_getpid();
             $this->pids[$pid] = 0;
-            $this->client->work();
+            $this->client->onWorkerStart();
             exit();
         }
     }

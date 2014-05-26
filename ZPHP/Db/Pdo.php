@@ -12,15 +12,11 @@ class Pdo
     private $dbName;
     private $tableName;
     private $className;
+    private $config;
 
     public function __construct($config, $className = null, $dbName = null)
     {
-        if (empty($this->pdo)) {
-            $this->pdo = new \PDO($config['dns'], $config['user'], $config['pass'], array(
-                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '{$config['charset']}';",
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
-            ));
-        }
+        $this->config = $config;
         if (!empty($className)) {
             $this->className = $className;
         }
@@ -29,6 +25,26 @@ class Pdo
         } else {
             $this->dbName = $dbName;
         }
+        $this->checkPing();
+    }
+
+    public function checkPing()
+    {
+        if (empty($this->pdo)) {
+            $this->pdo = $this->connect();
+        } elseif (!empty($this->config['ping'])) {
+            $this->ping();
+        }
+    }
+
+    private function connect()
+    {
+        return new \PDO($this->config['dsn'], $this->config['user'], $this->config['pass'], array(
+                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES '{$this->config['charset']}';",
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_PERSISTENT => empty($this->config['pconnect']) ? false : true
+            ));
+
     }
 
     public function getDBName()
@@ -44,6 +60,14 @@ class Pdo
         }
         $this->dbName = $dbName;
     }
+	//add set TableName change by ahuo 2013-11-05 14:23
+	public function setTableName($tableName)
+	{
+		if(empty($tableName)){
+			return;
+		}
+		$this->tableName = $tableName;
+	}
 
     public function getTableName()
     {
@@ -229,8 +253,8 @@ class Pdo
         $result = $statement->fetch();
         return $result["count"];
     }
-
-    public function remove($where, $params = [])
+	//$params = [] php5.3.6 报语法错误 change by ahuo 2013-11-05 14:23
+    public function remove($where, $params = array())
     {
         if (empty($where)) {
             return false;
@@ -263,5 +287,31 @@ class Pdo
         $statement = $this->pdo->prepare($sql);
         $statement->execute();
         return $statement->fetch();
+    }
+
+
+    public function ping()
+    {
+        if(empty($this->pdo)) {
+            $this->pdo = $this->connect();
+        } else {
+            try {
+                $status = $this->pdo->getAttribute(\PDO::ATTR_SERVER_INFO);
+            } catch (\Exception $e) {
+                if ($e->getCode() == 'HY000') {
+                    $this->pdo = $this->connect();
+                } else {
+                    throw $e;
+                }
+            }
+        }
+        return $this->pdo;
+    }
+
+    public function close()
+    {
+        if(empty($this->config['pconnect'])) {
+            $this->pdo = null;
+        }
     }
 }

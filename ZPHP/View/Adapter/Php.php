@@ -2,7 +2,7 @@
 /**
  * User: shenzhe
  * Date: 13-6-17
- * Json view
+ * 
  */
 
 
@@ -22,10 +22,10 @@ class Php extends Base
 
     public function display()
     {
-        $tplPath = ZPHP\Core\Config::getField('proejct', 'tpl_path', 'template' . DS . 'template');
-        $fileName = ZPHP\ZPHP::getRootPath() . DS . $tplPath . DS . $this->tplFile;
+        $tplPath = ZPHP\Core\Config::getField('project', 'tpl_path', ZPHP\ZPHP::getRootPath() . DS  . 'template' . DS . 'default'. DS);
+        $fileName = $tplPath . $this->tplFile;
         if (!\is_file($fileName)) {
-            throw new \Exception("no file {$fileName}");
+            throw new \Exception("no file {$this->tplFile}");
         }
         if (!empty($this->model)) {
             \extract($this->model);
